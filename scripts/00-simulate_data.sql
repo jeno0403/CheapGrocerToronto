@@ -1,52 +1,68 @@
-#### Preamble ####
-# Purpose: Simulates a dataset of Australian electoral divisions, including the 
-  #state and party that won each division.
-# Author: Rohan Alexander
-# Date: 26 September 2024
-# Contact: rohan.alexander@utoronto.ca
-# License: MIT
-# Pre-requisites: The `tidyverse` package must be installed
-# Any other information needed? Make sure you are in the `starter_folder` rproj
+-- Preamble
+-- Purpose: To create and populate a table with simulated grocery data.
+-- Author: Jinyan Wei
+-- Date: 12 November 2024
+-- Contact: jinyan.wei@utoronto.ca
+-- License: MIT
+-- Pre-requisites:
+--   - An empty SQLite database file open in DB Browser for SQLite or another SQLite-compatible SQL environment.
+--   - Ensure no table named 'GroceryData' already exists (or the script should be run with DROP TABLE IF EXISTS).
+--   - Confirm that the SQLite environment allows executing INSERT statements.
 
+ 
+-- Create the table for grocery data
+CREATE TABLE IF NOT EXISTS GroceryData (
+    nowtime TIMESTAMP,
+    vendor TEXT,
+    product_id INTEGER,
+    product_name TEXT,
+    brand TEXT,
+    units TEXT,
+    current_price REAL,
+    old_price REAL,
+    price_per_unit REAL,
+    other TEXT
+);
+-- Step 1: Create the table for the grocery data
+CREATE TABLE IF NOT EXISTS GroceryData (
+    nowtime TIMESTAMP,
+    vendor TEXT,
+    product_id INTEGER,
+    product_name TEXT,
+    brand TEXT,
+    units TEXT,
+    current_price REAL,
+    old_price REAL,
+    price_per_unit REAL,
+    other TEXT
+);
 
-#### Workspace setup ####
-library(tidyverse)
-set.seed(853)
-
-
-#### Simulate data ####
-# State names
-states <- c(
-  "New South Wales",
-  "Victoria",
-  "Queensland",
-  "South Australia",
-  "Western Australia",
-  "Tasmania",
-  "Northern Territory",
-  "Australian Capital Territory"
-)
-
-# Political parties
-parties <- c("Labor", "Liberal", "Greens", "National", "Other")
-
-# Create a dataset by randomly assigning states and parties to divisions
-analysis_data <- tibble(
-  division = paste("Division", 1:151),  # Add "Division" to make it a character
-  state = sample(
-    states,
-    size = 151,
-    replace = TRUE,
-    prob = c(0.25, 0.25, 0.15, 0.1, 0.1, 0.1, 0.025, 0.025) # Rough state population distribution
-  ),
-  party = sample(
-    parties,
-    size = 151,
-    replace = TRUE,
-    prob = c(0.40, 0.40, 0.05, 0.1, 0.05) # Rough party distribution
-  )
-)
-
-
-#### Save data ####
-write_csv(analysis_data, "data/00-simulated_data/simulated_data.csv")
+-- Step 2: Insert simulated data into the table
+INSERT INTO GroceryData (nowtime, vendor, product_id, product_name, brand, units, current_price, old_price, price_per_unit, other)
+SELECT 
+    datetime('now', '-' || ABS(RANDOM() % 100) || ' hours'),  -- Random timestamp within the last 100 hours
+    CASE WHEN RANDOM() % 7 = 0 THEN 'Voila' 
+         WHEN RANDOM() % 7 = 1 THEN 'T&T' 
+         WHEN RANDOM() % 7 = 2 THEN 'Loblaws' 
+         WHEN RANDOM() % 7 = 3 THEN 'No Frills' 
+         WHEN RANDOM() % 7 = 4 THEN 'Metro' 
+         WHEN RANDOM() % 7 = 5 THEN 'Galleria' 
+         ELSE 'Walmart Canada' END,  -- Random vendor
+    ABS(RANDOM() % 10000),  -- Random product_id
+    CASE WHEN RANDOM() % 5 = 0 THEN 'Milk'
+         WHEN RANDOM() % 5 = 1 THEN 'Cheese'
+         WHEN RANDOM() % 5 = 2 THEN 'Apple'
+         WHEN RANDOM() % 5 = 3 THEN 'Bread'
+         ELSE 'Yogurt' END,  -- Random product name
+    CASE WHEN RANDOM() % 3 = 0 THEN 'BrandA'
+         WHEN RANDOM() % 3 = 1 THEN 'BrandB'
+         ELSE 'BrandC' END,  -- Random brand
+    CASE WHEN RANDOM() % 2 = 0 THEN '1kg'
+         ELSE '500g' END,  -- Random units
+    ROUND(1 + (ABS(RANDOM() % 1000) / 100.0), 2),  -- Random current_price between 1.00 and 10.00
+    ROUND(1 + (ABS(RANDOM() % 1000) / 100.0), 2),  -- Random old_price between 1.00 and 10.00
+    ROUND(0.5 + (ABS(RANDOM() % 500) / 100.0), 2),  -- Random price_per_unit between 0.50 and 5.00
+    CASE WHEN RANDOM() % 4 = 0 THEN 'Best seller'
+         WHEN RANDOM() % 4 = 1 THEN 'Out of stock'
+         ELSE NULL END  -- Random other column
+FROM (SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5);
